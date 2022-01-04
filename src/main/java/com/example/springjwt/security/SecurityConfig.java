@@ -1,8 +1,12 @@
 package com.example.springjwt.security;
 
-import com.example.springjwt.jwt.JwtTokenFilter;
+import com.example.springjwt.jwt.JwtAuthenticatorFilter;
+import com.example.springjwt.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.BeanIds;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -14,10 +18,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-    @Bean
-    public JwtTokenFilter jwtTokenFilter() {
-        return new JwtTokenFilter();
-    }
+
+    @Autowired
+    UserService userService;
+
+
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -31,6 +36,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
         http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
+    }
+
+    @Bean(BeanIds.AUTHENTICATION_MANAGER)
+    @Override
+    public AuthenticationManager authenticationManagerBean() throws Exception {
+        // Get AuthenticationManager bean
+        return super.authenticationManagerBean();
+    }
+
+    @Bean
+    public JwtAuthenticatorFilter jwtTokenFilter() {
+        return new JwtAuthenticatorFilter();
     }
 
     @Bean

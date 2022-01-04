@@ -14,5 +14,5 @@ import javax.persistence.Id;
 public class Resource {
     @Id
     private int id;
-    private String authName;
+    private String roleName;
 }
