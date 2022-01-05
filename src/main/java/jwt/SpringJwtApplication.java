@@ -1,4 +1,4 @@
-package com.example.springjwt;
+package jwt;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -9,5 +9,8 @@ public class SpringJwtApplication {
     public static void main(String[] args) {
         SpringApplication.run(SpringJwtApplication.class, args);
     }
+
+
+
 
 }
