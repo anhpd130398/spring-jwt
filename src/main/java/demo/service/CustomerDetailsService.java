@@ -20,6 +20,6 @@ public class CustomerDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserBO user = repository.findByUserName(username);
-        return new User(user.getUsername(), user.getUsername(), new ArrayList<>());
+        return  new User(user.getUsername(), user.getPassword(), new ArrayList<>());
     }
 }
