@@ -49,12 +49,24 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 }
             }
         } catch (ExpiredJwtException ex) {
-            request.setAttribute("isRefreshToken", ex);
-        } catch (SignatureException ex) {
-            request.setAttribute("exception", ex);
+            String isRefreshToken = request.getHeader("isRefreshToken");
+            String requestURL = request.getRequestURL().toString();
+            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refresh")) {
+                allowForRefreshToken(ex, request);
+            } else
+                request.setAttribute("exception", ex);
+        } catch (Exception ex) {
+            System.out.println(ex);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private void allowForRefreshToken(ExpiredJwtException ex, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(
+                null, null, null);
+        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        request.setAttribute("claims", ex.getClaims());
     }
 
 

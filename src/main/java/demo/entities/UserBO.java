@@ -1,39 +1,23 @@
 package demo.entities;
 
 
+import lombok.Data;
+
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "user")
+@Data
+@Table(name = "userbo")
 public class UserBO {
     @Id
     private int id;
     private String username;
     private String password;
+    private String token;
+    @Column(name = "refresh_token")
+    private String refreshToken;
 
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 }
