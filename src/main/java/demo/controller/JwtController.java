@@ -59,13 +59,14 @@ public class JwtController {
     }
 
     @PostMapping("/refreshToken")
-    public ResponseEntity<?> refreshToken(@RequestParam(value = "refreshToken") String refreshToken) throws SecurityException,IOException  {
+    public ResponseEntity<?> refreshToken(@RequestParam("refreshToken") String refreshToken) throws SecurityException, IOException {
         UserBO userBO = userRepository.findByRefreshToken(refreshToken);
+
         try {
             if (userBO != null) {
                 UserDetails userDetails = detailsService.loadUserByUsername(userBO.getUsername());
                 Boolean check = jwtUtils.validateToken(userBO.getToken(), userDetails);
-                return ResponseEntity.ok("tokens are still valid");
+                return ResponseEntity.ok("tokens are still valid" + check);
             } else {
                 return ResponseEntity.badRequest().body("refreshToken incorrect or not expire");
             }
@@ -78,6 +79,7 @@ public class JwtController {
             authResponse.setToken(token);
             authResponse.setRefreshToken(refreshToken);
             return ResponseEntity.ok(authResponse);
+
         }
     }
 
@@ -86,6 +88,7 @@ public class JwtController {
         UserBO userBO = new UserBO();
         userBO.setUsername(request.getUsername());
         userBO.setPassword(passwordEncoder.encode(request.getPassword()));
+        userBO.setRoleId(request.getRoleId());
         return userRepository.save(userBO);
     }
 

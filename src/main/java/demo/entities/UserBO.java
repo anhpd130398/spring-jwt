@@ -19,5 +19,7 @@ public class UserBO {
     private String token;
     @Column(name = "refresh_token")
     private String refreshToken;
+    @Column(name = "role_id")
+    private String roleId;
 
 }

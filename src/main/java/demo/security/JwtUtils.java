@@ -3,12 +3,12 @@ package demo.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -42,6 +42,8 @@ public class JwtUtils {
 
     public String generateToken(UserDetails user) {
         Map<String, Object> claims = new HashMap<>();
+        Collection<? extends GrantedAuthority> roles = user.getAuthorities();
+        claims.put("role", roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
         return accessToken(claims, user);
     }
 
@@ -63,6 +65,14 @@ public class JwtUtils {
                 .signWith(SignatureAlgorithm.HS512, SECRET).
                 compact();
     }
+
+    public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
+        Claims claims = extractAllClaims(token);
+        List<SimpleGrantedAuthority> roles = new ArrayList<>();
+        claims.put("role", roles.add(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        return roles;
+    }
+
 
     public Boolean validateToken(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
