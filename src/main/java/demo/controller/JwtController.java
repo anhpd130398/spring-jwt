@@ -41,10 +41,9 @@ public class JwtController {
     private CustomerDetailsService detailsService;
 
     @PostMapping("/login")
-    public AuthResponse loginUser(@RequestBody UserBO userBO) {
-
-        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userBO.getUsername(), userBO.getPassword()));
-        UserDetails userDetails = detailsService.loadUserByUsername(userBO.getUsername());
+    public AuthResponse loginUser(@RequestBody AuthRequest authRequest) {
+        authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));
+        UserDetails userDetails = detailsService.loadUserByUsername(authRequest.getUsername());
         String jwtToken = jwtUtils.generateToken(userDetails);
         String refreshToken = jwtUtils.doGenerateRefreshToken(userDetails);
         String userName = jwtUtils.extractUsername(jwtToken);
@@ -64,14 +63,14 @@ public class JwtController {
 
         try {
             if (userBO != null) {
-                UserDetails userDetails = detailsService.loadUserByUsername(userBO.getUsername());
+                UserDetails userDetails = detailsService.loadUserByUsername(userBO.getRefreshToken());
                 Boolean check = jwtUtils.validateToken(userBO.getToken(), userDetails);
                 return ResponseEntity.ok("tokens are still valid" + check);
             } else {
                 return ResponseEntity.badRequest().body("refreshToken incorrect or not expire");
             }
         } catch (ExpiredJwtException ex) {
-            UserDetails userDetails = detailsService.loadUserByUsername(userBO.getUsername());
+            UserDetails userDetails = detailsService.loadUserByUsername(userBO.getRefreshToken());
             String token = jwtUtils.generateToken(userDetails);
             userBO.setToken(token);
             userRepository.save(userBO);

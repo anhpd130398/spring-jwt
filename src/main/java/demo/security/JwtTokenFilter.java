@@ -5,6 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureException;
 import org.apache.catalina.filters.ExpiresFilter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
@@ -32,14 +33,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
-        String token = null;
-        String userName = null;
         try {
             if (header != null && header.startsWith("Bearer ")) {
-                token = header.substring(7);
-                userName = jwtUtils.extractUsername(token);
+                String token = header.substring(7);
+                String userName = jwtUtils.extractUsername(token);
                 if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails = new User(userName,"",jwtUtils.getRolesFromToken(token));
+                    UserDetails userDetails = new User(userName, "", jwtUtils.getRolesFromToken(token));
                     if (jwtUtils.validateToken(token, userDetails)) {
                         UsernamePasswordAuthenticationToken authenticationToken = new
                                 UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
@@ -49,16 +48,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 }
             }
         } catch (ExpiredJwtException ex) {
-            String isRefreshToken = request.getHeader("isRefreshToken");
+            String isRefreshToken = request.getHeader("Authorization");
             String requestURL = request.getRequestURL().toString();
             if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refresh")) {
                 allowForRefreshToken(ex, request);
-            } else
+            } else {
                 request.setAttribute("exception", ex);
-        } catch (Exception ex) {
-            System.out.println(ex);
+            }
+        } catch (BadCredentialsException ex) {
+            request.setAttribute("exception", ex);
         }
-
         filterChain.doFilter(request, response);
     }
 

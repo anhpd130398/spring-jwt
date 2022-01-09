@@ -58,10 +58,10 @@ public class JwtUtils {
 
     private String accessToken(Map<String, Object> claims, UserDetails user) {
         return Jwts.builder().
-                setClaims(claims).
                 setSubject(user.getUsername()).
                 setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + (60 * 1000)))
+                .addClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, SECRET).
                 compact();
     }
