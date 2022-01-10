@@ -10,6 +10,8 @@ import demo.service.CustomerDetailsService;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -55,22 +57,22 @@ public class JwtController {
         authResponse.setToken(jwtToken);
         authResponse.setRefreshToken(refreshToken);
         return authResponse;
+
     }
 
     @PostMapping("/refreshToken")
-    public ResponseEntity<?> refreshToken(@RequestParam("refreshToken") String refreshToken) throws SecurityException, IOException {
+    public ResponseEntity<?> refreshToken(@RequestParam(value = "refreshToken") String refreshToken) throws SecurityException, IOException {
         UserBO userBO = userRepository.findByRefreshToken(refreshToken);
-
         try {
             if (userBO != null) {
-                UserDetails userDetails = detailsService.loadUserByUsername(userBO.getRefreshToken());
+                UserDetails userDetails = detailsService.loadUserByUsername(userBO.getUsername());
                 Boolean check = jwtUtils.validateToken(userBO.getToken(), userDetails);
                 return ResponseEntity.ok("tokens are still valid" + check);
             } else {
                 return ResponseEntity.badRequest().body("refreshToken incorrect or not expire");
             }
         } catch (ExpiredJwtException ex) {
-            UserDetails userDetails = detailsService.loadUserByUsername(userBO.getRefreshToken());
+            UserDetails userDetails = detailsService.loadUserByUsername(userBO.getUsername());
             String token = jwtUtils.generateToken(userDetails);
             userBO.setToken(token);
             userRepository.save(userBO);
@@ -93,6 +95,7 @@ public class JwtController {
 
 
     @GetMapping("/message")
+    @Secured("ROLE_ADMIN")
     public List<UserBO> message() throws SecurityException, Exception {
         return userRepository.findAll();
     }

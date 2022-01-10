@@ -40,36 +40,52 @@ public class JwtUtils {
         return extractExpiration(token).before(new Date());
     }
 
-    public String generateToken(UserDetails user) {
-        Map<String, Object> claims = new HashMap<>();
-        Collection<? extends GrantedAuthority> roles = user.getAuthorities();
-        claims.put("role", roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN")));
-        return accessToken(claims, user);
-    }
-
     public String doGenerateRefreshToken(UserDetails user) {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(user.getUsername())
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + (24 * 60 * 60 * 1000)))
+                .setExpiration(new Date(now.getTime() + (24 * 60 * 60 * 1000L)))
                 .signWith(SignatureAlgorithm.HS512, SECRET).compact();
     }
 
+    public String generateToken(UserDetails user) {
+        Map<String, Object> claims = new HashMap<>();
+        Collection<? extends GrantedAuthority> roles = user.getAuthorities();
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_ADMIN"))) {
+            claims.put("isAdmin", true);
+        }
+        if (roles.contains(new SimpleGrantedAuthority("ROLE_USER"))) {
+            claims.put("isUser", true);
+        }
+        return accessToken(claims, user);
+    }
+
     private String accessToken(Map<String, Object> claims, UserDetails user) {
-        return Jwts.builder().
-                setSubject(user.getUsername()).
-                setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (60 * 1000)))
+        Date now = new Date();
+        return Jwts.builder()
+                .setSubject(user.getUsername())
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + (2*60 * 100L)))
                 .addClaims(claims)
                 .signWith(SignatureAlgorithm.HS512, SECRET).
                 compact();
     }
 
+
     public List<SimpleGrantedAuthority> getRolesFromToken(String token) {
         Claims claims = extractAllClaims(token);
+        claims.get("role", Boolean.class);
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
-        claims.put("role", roles.add(new SimpleGrantedAuthority("ROLE_ADMIN")));
+        Boolean isAdmin = claims.get("isAdmin", Boolean.class);
+        Boolean isUser = claims.get("isUser", Boolean.class);
+        if (isAdmin != null && isAdmin) {
+            roles.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
+
+        if (isUser != null && isAdmin) {
+            roles.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
         return roles;
     }
 

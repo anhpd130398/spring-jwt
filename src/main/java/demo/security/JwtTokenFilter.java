@@ -48,15 +48,16 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 }
             }
         } catch (ExpiredJwtException ex) {
-            String isRefreshToken = request.getHeader("Authorization");
+            String isRefreshToken = request.getHeader("isRefreshToken");
             String requestURL = request.getRequestURL().toString();
-            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refresh")) {
+            if (isRefreshToken != null && isRefreshToken.equals("true") && requestURL.contains("refreshToken")) {
                 allowForRefreshToken(ex, request);
-            } else {
+            } else
                 request.setAttribute("exception", ex);
-            }
         } catch (BadCredentialsException ex) {
             request.setAttribute("exception", ex);
+        } catch (SignatureException ex) {
+            request.setAttribute("exceptions", ex);
         }
         filterChain.doFilter(request, response);
     }
