@@ -79,11 +79,12 @@ public class JwtUtils {
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
         Boolean isAdmin = claims.get("isAdmin", Boolean.class);
         Boolean isUser = claims.get("isUser", Boolean.class);
+
         if (isAdmin != null && isAdmin) {
             roles.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         }
 
-        if (isUser != null && isAdmin) {
+        if (isUser != null && isUser) {
             roles.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
         return roles;

@@ -34,7 +34,7 @@ public class Security extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http.csrf().disable();
         http.authorizeRequests()
-                .antMatchers("/register", "/login","refreshToken").permitAll()
+                .antMatchers("/register", "/login","/refreshToken").permitAll()
                 .anyRequest().authenticated();
         http.exceptionHandling().authenticationEntryPoint(authenticationEntryPoint).and().sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
